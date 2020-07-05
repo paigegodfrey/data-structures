@@ -1,13 +1,16 @@
 class StackInfo {
   constructor(start, capacity) {
     this.start = start;
-    this.lastElementIndex = start;
     this.capacity = capacity;
     this.size = 0;
   }
 
   ifFull() {
     return this.size === this.capacity;
+  }
+
+  isEmpty() {
+    return this.size === 0;
   }
 }
 
@@ -25,38 +28,85 @@ class MultiStack {
     this.values = new Array(numStacks * defaultSize).fill(0);
   }
 
-  // add new value to specific stack
   push(stackNum, val) {
     if (this.allStacksFull()) throw new Error('Stacks at full capacity');
 
-    // if current stack is at capacity => make room by adjusting other stack(s) capacity and shifting values
-    let stack = info[stackNum - 1];
-    if(stack.isFull()) expand(stackNum);
+    let stack = this.info[stackNum - 1];
+    if (stack.isFull()) expand(stackNum);
 
-    // if current stack has room
-    // increase lastElementIndex
-    // place value at lastElementIndex
-    // increase size
-
+    // first increase the size to move the lastElementIndex pointer to next open position
+    stack.size++;
+    this.values[this.lastElementIndex(stackNum)] = val;
   }
 
-  // remove last added value from specific stack
   pop(stackNum) {
-    // locate and store value at lastElementIndex
-    // clear out value (set = 0)
-    // decrease stack size
-    // move lastElementIndex back one
-    // return value
+    let stack = this.info[stackNum - 1];
+    if (stack.isEmpty()) throw new Error('Stack is empty');
 
+    let valRemoved = this.values[this.lastElementIndex(stackNum)];
+    this.values[this.lastElementIndex(stackNum)] = 0;
+    stack.size--;
+    return valRemoved;
   }
 
-  // return last added value from specific stack
   peek(stackNum) {
-    // locate and return value at lastElementIndex 
-
+    let stack = this.info[stackNum - 1];
+    return this.values[this.lastElementIndex(stackNum)];
   }
 
-  // check if all stacks are at full capacity
+  // increase capacity of specific stack
+  expand(stackNum) {
+    // shift values out of next stack into openings
+    let nextStackNum = nexStack + 1 <= this.info.length ? stackNum + 1 : 1;
+    shift(nextStackNum);
+
+    let stack = this.info[stackNum + 1];
+    stack.capacity++;
+  }
+
+  // repositions values in stack and updates lastElementIndex
+  shift(stackNum) {
+    let stack = this.info[stackNum + 1];
+    let nextStackNum = stackNum + 1 <= this.info.length ? stackNum + 1 : 1;
+
+    if (stack.ifFull()) {
+      this.shift(nextStackNum);
+      stack.capacity++;
+    }
+
+    // shift values over one position to the right
+    // starting with the top of the stack (right-most value)
+    let index = stack.lastCapacityIndex(stackNum);
+    while (this.isWithinStackCapacity(stackNum, index)) {
+      this.values[index] = this.values[this.nextIndex(index)];
+      index = this.previousIndex(index);
+    }
+    // update stack info
+    this.values[stack.start] = 0; // clears data that will now be part of the prior stack's capacity
+    stack.start = this.nextIndex(stack.start);
+    stack.capacity--;
+  }
+
+  // check if stack index is within stack bounds
+  isWithinStackCapacity(stackNum, index) {
+    if (index < 0 || index >= this.values.length) return false;
+
+    let stack = this.info[stackNum + 1];
+    let unwrappedIndex = index < stack.start ? index + this.values.length : index;
+    let end = stack.start + stack.capacity - 1;
+    return stack.start <= unwrappedIndex && unwrappedIndex <= end;
+  }
+
+  lastCapacityIndex(stackNum) {
+    let stack = this.info[stackNum + 1];
+    return this.adjustIndex(stack.start + stack.capacity - 1);
+  }
+
+  lastElementIndex(stackNum) {
+    let stack = this.info[stackNum + 1];
+    return this.adjustIndex(stack.start + stack.size - 1);
+  }
+
   allStacksFull() {
     let numStacksFull = 0;
     let i = 0;
@@ -66,24 +116,18 @@ class MultiStack {
     return numStacksFull === this.info.length;
   }
 
-  // check is specific stack is empty
-  isEmpty(stackNum) {
-    // check stack.size vs stack.capacity
+  // adjusts index to be within range(0, length - 1)
+  adjustIndex(index) {
+    return index % this.values.length;
   }
 
-  // increase capacity of specific stack
-  expand(stackNum) {
-    // shift values out of next stack into openings
-    let nextStackNum = nexStack + 1 <= this.info.length ? stackNum + 1 : 1;
-    shift(nextStackNum);
-    
-    let stack = info[stackNum + 1];
-    stack.capacity++;
+  // return next index, adjusted for wrap around
+  nextIndex(currentIndex) {
+    return this.adjustIndex(currentIndex + 1);
   }
 
-  // repositions values in stack and updates lastElementIndex
-  shift(stackNum) {
-    
+  // return previous index, adjusted for wrap around
+  previousIndex(currentIndex) {
+    return this.adjustIndex(currentIndex - 1);
   }
-
 }
