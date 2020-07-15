@@ -1,27 +1,29 @@
 class ArrayList {
-  constructor() {
+  constructor(sizeFactor) {
     this.list = new Array(1);
-    this.size = 0;
+    this.sizeFactor = sizeFactor;
+    this.filled = 0;
   }
 
   isFull() {
-    return this.size === this.list.length;
+    return this.filled === this.list.length;
   }
 
   insert(val) {
     if (this.isFull()) {
       let startingLength = this.list.length;
-      while (this.list.length !== startingLength * 2) {
+      while (this.list.length !== startingLength * this.sizeFactor) {
         this.list.push(undefined);
       }
     }
-    this.list[this.size] = val;
-    this.size++;
+    this.list[this.filled] = val;
+    this.filled++;
   }
 
   remove() {
-    this.list[this.size - 1] = undefined;
-    this.size--;
-    if (this.size <= this.list.length / 2) this.list.length /= 2;
+    this.list[this.filled - 1] = undefined;
+    this.filled--;
+    if (this.filled === 0) return;
+    if (this.filled <= this.list.length / this.sizeFactor) this.list.length /= 2;
   }
 }
