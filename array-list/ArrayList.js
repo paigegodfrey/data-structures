@@ -24,6 +24,6 @@ class ArrayList {
     this.list[this.filled - 1] = undefined;
     this.filled--;
     if (this.filled === 0) return;
-    if (this.filled <= this.list.length / this.sizeFactor) this.list.length /= 2;
+    if (this.filled <= this.list.length / this.sizeFactor) this.list.length /= this.sizeFactor;
   }
 }
