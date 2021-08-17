@@ -9,12 +9,10 @@ function countPairsDiff(nums, diff) {
 
     let numPlusDiff = num + diff;
     let numMinusDiff = num - diff;
-    console.log({ numPlusDiff });
-    console.log({ numMinusDiff });
 
     if (frequency[numPlusDiff]) count += frequency[numPlusDiff];
     if (frequency[numMinusDiff]) count += frequency[numMinusDiff];
-    console.log({ count });
   }
+  
   return count;
 }
