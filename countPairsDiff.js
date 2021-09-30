@@ -1,5 +1,5 @@
 function countPairsDiff(nums, diff) {
-  if (!nums.length) return 0;
+  if (nums.length < 2) return 0;
 
   let count = 0;
   let frequency = {};
